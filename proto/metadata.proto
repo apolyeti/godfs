@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package metadata;
+
+service MetadataService {
+  rpc GetFile(CreateFileRequest) returns (CreateFileResponse);
+  rpc GetInode(GetInodeRequest) returns (Inode);
+}
+
+message CreateFileRequest {
+  string name = 1;
+  bool is_dir = 2;
+}
+
+message CreateFileResponse {
+  string name = 1;
+  string inode = 2;
+}
+
+message GetInodeRequest {
+  string name = 1;
+  bool is_dir = 2;
+}
+
+message Inode {
+  string id = 1;
+  string name = 2;
+  bool is_dir = 3;
+  int64 size = 4;
+  string permission = 5;
+  string parent = 6;
+}
+
