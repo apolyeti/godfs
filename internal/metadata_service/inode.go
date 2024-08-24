@@ -9,6 +9,7 @@ Timestamp represents the timestamps of a file or directory.
 package metadata_service
 
 import (
+	"github.com/google/uuid"
 	"time"
 )
 
@@ -54,32 +55,173 @@ type Inode struct {
 	Links       []string
 }
 
-// TODO: Implement the following methods for Inode:
-// - AddLink
-// - RemoveLink
-// - AddChunk
-// - RemoveChunk
-// - UpdateSize
-// - UpdatePermissions
-// - UpdateOwnership
-// - UpdateTimestamp
-// - UpdateParentID
-// - UpdateName
-// - UpdateID
-// - UpdateIsDir
-// - UpdateLinks
-// - UpdateChunkIDs
-// - GetLink
-// - GetChunk
-// - GetSize
-// - GetPermissions
-// - GetOwnership
-// - GetTimestamp
-// - GetParentID
-// - GetName
-// - GetID
-// - GetIsDir
-// - GetLinks
-// - GetChunkIDs
-// - GetNumLinks
-// - GetNumChunks
+func NewInode(name string, isDir bool) *Inode {
+	return &Inode{
+		ID:          uuid.New().String(),
+		Name:        name,
+		IsDir:       isDir,
+		Size:        0,
+		Permissions: "rw-r--r--",
+		Ownership:   Ownership{UID: 0, GID: 0},
+		Timestamp: Timestamp{
+			CreatedAt:  time.Now(),
+			UpdatedAt:  time.Now(),
+			AccessedAt: time.Now(),
+		},
+		ChunkIDs: []string{},
+		ParentID: "",
+		Links:    []string{},
+	}
+}
+
+// AddLink adds a hard link to the inode.
+func (i *Inode) AddLink(linkID string) {
+	i.Links = append(i.Links, linkID)
+}
+
+// RemoveLink removes a hard link from the inode.
+func (i *Inode) RemoveLink(linkID string) {
+	for j, link := range i.Links {
+		if link == linkID {
+			i.Links = append(i.Links[:j], i.Links[j+1:]...)
+			break
+		}
+	}
+}
+
+// AddChunk adds a chunk to the inode.
+func (i *Inode) AddChunk(chunkID string) {
+	i.ChunkIDs = append(i.ChunkIDs, chunkID)
+}
+
+// RemoveChunk removes a chunk from the inode.
+func (i *Inode) RemoveChunk(chunkID string) {
+	for j, chunk := range i.ChunkIDs {
+		if chunk == chunkID {
+			i.ChunkIDs = append(i.ChunkIDs[:j], i.ChunkIDs[j+1:]...)
+			break
+		}
+	}
+}
+
+// UpdateSize updates the size of the inode.
+func (i *Inode) UpdateSize(size int64) {
+	i.Size = size
+}
+
+// UpdatePermissions updates the permissions of the inode.
+func (i *Inode) UpdatePermissions(permissions string) {
+	i.Permissions = permissions
+}
+
+// UpdateOwnership updates the ownership of the inode.
+func (i *Inode) UpdateOwnership(ownership Ownership) {
+	i.Ownership = ownership
+}
+
+// UpdateTimestamp updates the timestamps of the inode.
+func (i *Inode) UpdateTimestamp(timestamp Timestamp) {
+	i.Timestamp = timestamp
+}
+
+// UpdateParentID updates the parent ID of the inode.
+func (i *Inode) UpdateParentID(parentID string) {
+	i.ParentID = parentID
+}
+
+// UpdateName updates the name of the inode.
+func (i *Inode) UpdateName(name string) {
+	i.Name = name
+}
+
+// UpdateID updates the ID of the inode.
+func (i *Inode) UpdateID(id string) {
+	i.ID = id
+}
+
+// UpdateIsDir updates the isDir field of the inode.
+func (i *Inode) UpdateIsDir(isDir bool) {
+	i.IsDir = isDir
+}
+
+// UpdateLinks updates the links of the inode.
+func (i *Inode) UpdateLinks(links []string) {
+	i.Links = links
+}
+
+// UpdateChunkIDs updates the chunk IDs of the inode.
+func (i *Inode) UpdateChunkIDs(chunkIDs []string) {
+	i.ChunkIDs = chunkIDs
+}
+
+// GetLink returns the link at the specified index.
+func (i *Inode) GetLink(index int) string {
+	return i.Links[index]
+}
+
+// GetChunk returns the chunk at the specified index.
+func (i *Inode) GetChunk(index int) string {
+	return i.ChunkIDs[index]
+}
+
+// GetSize returns the size of the inode.
+func (i *Inode) GetSize() int64 {
+	return i.Size
+}
+
+// GetPermissions returns the permissions of the inode.
+func (i *Inode) GetPermissions() string {
+	return i.Permissions
+}
+
+// GetOwnership returns the ownership of the inode.
+// Returns an Ownership struct
+func (i *Inode) GetOwnership() Ownership {
+	return i.Ownership
+}
+
+// GetTimestamp returns the timestamps of the inode.
+// Returns a Timestamp struct
+func (i *Inode) GetTimestamp() Timestamp {
+	return i.Timestamp
+}
+
+// GetParentID returns the parent ID of the inode.
+func (i *Inode) GetParentID() string {
+	return i.ParentID
+}
+
+// GetName returns the name of the inode.
+func (i *Inode) GetName() string {
+	return i.Name
+}
+
+// GetID returns the ID of the inode.
+func (i *Inode) GetID() string {
+	return i.ID
+}
+
+// GetIsDir returns the isDir field of the inode.
+func (i *Inode) GetIsDir() bool {
+	return i.IsDir
+}
+
+// GetLinks returns the links of the inode.
+func (i *Inode) GetLinks() []string {
+	return i.Links
+}
+
+// GetChunkIDs returns the chunk IDs of the inode.
+func (i *Inode) GetChunkIDs() []string {
+	return i.ChunkIDs
+}
+
+// GetNumLinks returns the number of links to the inode.
+func (i *Inode) GetNumLinks() int {
+	return len(i.Links)
+}
+
+// GetNumChunks returns the number of chunks in the inode.
+func (i *Inode) GetNumChunks() int {
+	return len(i.ChunkIDs)
+}
