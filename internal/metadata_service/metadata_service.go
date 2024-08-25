@@ -5,6 +5,9 @@ Package metadata_service provides the metadata service for the metadata server.
 package metadata_service
 
 import (
+	"context"
+	metadata "github.com/apolyeti/godfs/internal/metadata_service/service"
+	"log"
 	"sync"
 )
 
@@ -12,6 +15,7 @@ import (
 // inodes: map of string to Inode
 // mu: RWMutex for concurrent access to inodes
 type MetadataService struct {
+	metadata.UnimplementedMetadataServiceServer
 	inodes map[string]*Inode
 	mu     sync.RWMutex
 }
@@ -25,7 +29,7 @@ func NewMetadataService() *MetadataService {
 }
 
 // GetInode returns the inode with the given ID
-func (m *MetadataService) GetInode(id string) (*Inode, error) {
+func (m *MetadataService) getInode(id string) (*Inode, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	inode, ok := m.inodes[id]
@@ -33,4 +37,52 @@ func (m *MetadataService) GetInode(id string) (*Inode, error) {
 		return nil, ErrFileNotFound
 	}
 	return inode, nil
+}
+
+func (m *MetadataService) CreateInode(
+	ctx context.Context,
+	req *metadata.CreateFileRequest,
+) (*metadata.CreateFileResponse,
+	error,
+) {
+	log.Printf("Received CreateInode Request: %v", req)
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if _, ok := m.inodes[req.Name]; ok {
+		return nil, ErrExists
+	}
+	m.inodes[req.Name] = NewInode(req.Name, req.IsDir)
+	return &metadata.CreateFileResponse{
+		Name:  req.Name,
+		Inode: m.inodes[req.Name].ID,
+	}, nil
+}
+
+func (m *MetadataService) GetInode(
+	ctx context.Context,
+	req *metadata.GetInodeRequest,
+) (*Inode, error) {
+	log.Printf("Received GetInode Request: %v", req)
+	inode, err := m.getInode(req.Name)
+	if err != nil {
+		return nil, err
+	}
+	return inode, nil
+}
+
+func (m *MetadataService) CreateFile(
+	ctx context.Context,
+	req *metadata.CreateFileRequest,
+) (*metadata.CreateFileResponse, error) {
+	log.Printf("Received CreateFile Request: %v", req)
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if _, ok := m.inodes[req.Name]; ok {
+		return nil, ErrExists
+	}
+	m.inodes[req.Name] = NewInode(req.Name, false)
+	return &metadata.CreateFileResponse{
+		Name:  req.Name,
+		Inode: m.inodes[req.Name].ID,
+	}, nil
 }

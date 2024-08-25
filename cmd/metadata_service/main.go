@@ -3,16 +3,24 @@
 package main
 
 import (
-	"github.com/apolyeti/godfs/internal/metadata_service"
+	metadata "github.com/apolyeti/godfs/internal/metadata_service"
+	metadata_service "github.com/apolyeti/godfs/internal/metadata_service/service"
 	"google.golang.org/grpc"
+	"log"
+	"net"
 )
 
 func main() {
-	metaDataService := metadata_service.NewMetadataService()
+	lis, err := net.Listen("tcp", ":8080")
 
-	// Setup gRPC server
+	if err != nil {
+		log.Fatalf("Failed to listen: %v", err)
+	}
 
-	server := grpc.NewServer()
+	s := metadata.NewMetadataService()
 
-	metadata.RegisterMetadataServiceServer(server, metaDataService)
+	grpcServer := grpc.NewServer()
+
+	metadata_service.RegisterMetadataServiceServer(grpcServer, s)
+
 }
