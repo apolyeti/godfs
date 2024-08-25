@@ -42,7 +42,8 @@ func (m *MetadataService) getInode(id string) (*Inode, error) {
 func (m *MetadataService) CreateInode(
 	ctx context.Context,
 	req *metadata.CreateFileRequest,
-) (*metadata.CreateFileResponse,
+) (
+	*metadata.CreateFileResponse,
 	error,
 ) {
 	log.Printf("Received CreateInode Request: %v", req)
@@ -58,7 +59,13 @@ func (m *MetadataService) CreateInode(
 	}, nil
 }
 
-func (m *MetadataService) GetInode(ctx context.Context, req *metadata.GetInodeRequest) (*metadata.Inode, error) {
+func (m *MetadataService) GetInode(
+	ctx context.Context,
+	req *metadata.GetInodeRequest,
+) (
+	*metadata.Inode,
+	error,
+) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	inode, ok := m.inodes[req.Name]
@@ -76,7 +83,10 @@ func (m *MetadataService) GetInode(ctx context.Context, req *metadata.GetInodeRe
 func (m *MetadataService) CreateFile(
 	ctx context.Context,
 	req *metadata.CreateFileRequest,
-) (*metadata.CreateFileResponse, error) {
+) (
+	*metadata.CreateFileResponse,
+	error,
+) {
 	log.Printf("Received CreateFile Request: %v", req)
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -93,7 +103,10 @@ func (m *MetadataService) CreateFile(
 func (m *MetadataService) GetFile(
 	ctx context.Context,
 	req *metadata.CreateFileRequest,
-) (*metadata.CreateFileResponse, error) {
+) (
+	*metadata.CreateFileResponse,
+	error,
+) {
 	log.Printf("Received GetFile Request: %v", req)
 	inode, err := m.getInode(req.Name)
 	if err != nil {
