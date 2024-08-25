@@ -11,13 +11,19 @@ import (
 func main() {
 	var conn *grpc.ClientConn
 
-	conn, err := grpc.NewClient("localhost:8080", grpc.WithTransportCredentials(
-		insecure.NewCredentials(),
-	))
+	conn, err := grpc.NewClient(
+		"localhost:8080",
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
-	defer conn.Close()
+
+	defer func() {
+		if err := conn.Close(); err != nil {
+			log.Fatalf("Failed to close connection: %v", err)
+		}
+	}()
 
 	c := metadata.NewMetadataServiceClient(conn)
 
