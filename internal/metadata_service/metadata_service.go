@@ -58,16 +58,19 @@ func (m *MetadataService) CreateInode(
 	}, nil
 }
 
-func (m *MetadataService) GetInode(
-	ctx context.Context,
-	req *metadata.GetInodeRequest,
-) (*Inode, error) {
-	log.Printf("Received GetInode Request: %v", req)
-	inode, err := m.getInode(req.Name)
-	if err != nil {
-		return nil, err
+func (m *MetadataService) GetInode(ctx context.Context, req *metadata.GetInodeRequest) (*metadata.Inode, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	inode, ok := m.inodes[req.Name]
+	if !ok {
+		return nil, ErrFileNotFound
 	}
-	return inode, nil
+
+	return &metadata.Inode{
+		Name:  inode.Name,
+		Id:    inode.ID,
+		IsDir: inode.IsDir,
+	}, nil
 }
 
 func (m *MetadataService) CreateFile(
@@ -84,5 +87,24 @@ func (m *MetadataService) CreateFile(
 	return &metadata.CreateFileResponse{
 		Name:  req.Name,
 		Inode: m.inodes[req.Name].ID,
+	}, nil
+}
+
+func (m *MetadataService) GetFile(
+	ctx context.Context,
+	req *metadata.CreateFileRequest,
+) (*metadata.CreateFileResponse, error) {
+	log.Printf("Received GetFile Request: %v", req)
+	inode, err := m.getInode(req.Name)
+	if err != nil {
+		return nil, err
+	}
+	if inode.IsDir {
+		return nil, ErrIsDir
+	}
+
+	return &metadata.CreateFileResponse{
+		Name:  req.Name,
+		Inode: inode.ID,
 	}, nil
 }
