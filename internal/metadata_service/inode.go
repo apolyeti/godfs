@@ -53,7 +53,7 @@ type Inode struct {
 	ChunkIDs         []string
 	ParentID         string
 	Links            []string
-	DirectoryEntries []string
+	DirectoryEntries map[string]string
 }
 
 func NewInode(name string, isDir bool) *Inode {
