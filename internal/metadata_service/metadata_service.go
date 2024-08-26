@@ -90,16 +90,31 @@ func (m *MetadataService) CreateFile(
 	log.Printf("Received CreateFile Request: %v", req)
 	m.mu.Lock()
 	defer m.mu.Unlock()
+
+	parentInode, err := m.getInode(req.Parent)
+	if err != nil {
+		return nil, err
+	}
+
+	if !parentInode.IsDir {
+		return nil, ErrNotDir
+	}
+
 	if _, ok := m.inodes[req.Name]; ok {
 		return nil, ErrExists
 	}
-	m.inodes[req.Name] = NewInode(req.Name, false)
+
+	inode := NewInode(req.Name, req.IsDir)
+
+	m.inodes[req.Name] = inode
+
+	parentInode.DirectoryEntries = append(parentInode.DirectoryEntries, req.Name)
+
 	return &metadata.CreateFileResponse{
 		Name:  req.Name,
-		Inode: m.inodes[req.Name].ID,
+		Inode: inode.ID,
 	}, nil
 }
-
 func (m *MetadataService) GetFile(
 	ctx context.Context,
 	req *metadata.CreateFileRequest,
@@ -120,4 +135,25 @@ func (m *MetadataService) GetFile(
 		Name:  req.Name,
 		Inode: inode.ID,
 	}, nil
+}
+
+func (m *MetadataService) listDir(inode *Inode) ([]*metadata.Inode, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	if !inode.IsDir {
+		return nil, ErrNotDir
+	}
+	var inodes []*metadata.Inode
+	for _, name := range inode.DirectoryEntries {
+		inode, ok := m.inodes[name]
+		if !ok {
+			return nil, ErrFileNotFound
+		}
+		inodes = append(inodes, &metadata.Inode{
+			Name:  inode.Name,
+			Id:    inode.ID,
+			IsDir: inode.IsDir,
+		})
+	}
+	return inodes, nil
 }

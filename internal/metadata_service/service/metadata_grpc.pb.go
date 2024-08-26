@@ -22,6 +22,7 @@ const (
 	MetadataService_GetFile_FullMethodName    = "/metadata.MetadataService/GetFile"
 	MetadataService_GetInode_FullMethodName   = "/metadata.MetadataService/GetInode"
 	MetadataService_CreateFile_FullMethodName = "/metadata.MetadataService/CreateFile"
+	MetadataService_ListDir_FullMethodName    = "/metadata.MetadataService/ListDir"
 )
 
 // MetadataServiceClient is the client API for MetadataService service.
@@ -31,6 +32,7 @@ type MetadataServiceClient interface {
 	GetFile(ctx context.Context, in *CreateFileRequest, opts ...grpc.CallOption) (*CreateFileResponse, error)
 	GetInode(ctx context.Context, in *GetInodeRequest, opts ...grpc.CallOption) (*Inode, error)
 	CreateFile(ctx context.Context, in *CreateFileRequest, opts ...grpc.CallOption) (*CreateFileResponse, error)
+	ListDir(ctx context.Context, in *ListDirRequest, opts ...grpc.CallOption) (*ListDirResponse, error)
 }
 
 type metadataServiceClient struct {
@@ -71,6 +73,16 @@ func (c *metadataServiceClient) CreateFile(ctx context.Context, in *CreateFileRe
 	return out, nil
 }
 
+func (c *metadataServiceClient) ListDir(ctx context.Context, in *ListDirRequest, opts ...grpc.CallOption) (*ListDirResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListDirResponse)
+	err := c.cc.Invoke(ctx, MetadataService_ListDir_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MetadataServiceServer is the server API for MetadataService service.
 // All implementations must embed UnimplementedMetadataServiceServer
 // for forward compatibility.
@@ -78,6 +90,7 @@ type MetadataServiceServer interface {
 	GetFile(context.Context, *CreateFileRequest) (*CreateFileResponse, error)
 	GetInode(context.Context, *GetInodeRequest) (*Inode, error)
 	CreateFile(context.Context, *CreateFileRequest) (*CreateFileResponse, error)
+	ListDir(context.Context, *ListDirRequest) (*ListDirResponse, error)
 	mustEmbedUnimplementedMetadataServiceServer()
 }
 
@@ -96,6 +109,9 @@ func (UnimplementedMetadataServiceServer) GetInode(context.Context, *GetInodeReq
 }
 func (UnimplementedMetadataServiceServer) CreateFile(context.Context, *CreateFileRequest) (*CreateFileResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateFile not implemented")
+}
+func (UnimplementedMetadataServiceServer) ListDir(context.Context, *ListDirRequest) (*ListDirResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListDir not implemented")
 }
 func (UnimplementedMetadataServiceServer) mustEmbedUnimplementedMetadataServiceServer() {}
 func (UnimplementedMetadataServiceServer) testEmbeddedByValue()                         {}
@@ -172,6 +188,24 @@ func _MetadataService_CreateFile_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MetadataService_ListDir_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListDirRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MetadataServiceServer).ListDir(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MetadataService_ListDir_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MetadataServiceServer).ListDir(ctx, req.(*ListDirRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MetadataService_ServiceDesc is the grpc.ServiceDesc for MetadataService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -190,6 +224,10 @@ var MetadataService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateFile",
 			Handler:    _MetadataService_CreateFile_Handler,
+		},
+		{
+			MethodName: "ListDir",
+			Handler:    _MetadataService_ListDir_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -8,11 +8,21 @@ service MetadataService {
   rpc GetFile(CreateFileRequest) returns (CreateFileResponse);
   rpc GetInode(GetInodeRequest) returns (Inode);
   rpc CreateFile(CreateFileRequest) returns (CreateFileResponse);
+  rpc ListDir(ListDirRequest) returns (ListDirResponse);
+}
+
+message ListDirRequest {
+  string name = 1;
+}
+
+message ListDirResponse {
+  repeated Inode inodes = 1;
 }
 
 message CreateFileRequest {
   string name = 1;
-  bool is_dir = 2;
+  string parent = 2;
+  bool is_dir = 3;
 }
 
 message CreateFileResponse {

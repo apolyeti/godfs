@@ -43,16 +43,17 @@ type Timestamp struct {
 // ParentID: ID of parent directory
 // Links: IDs of hard links to the file
 type Inode struct {
-	ID          string
-	Name        string
-	IsDir       bool
-	Size        int64
-	Permissions string
-	Ownership   Ownership
-	Timestamp   Timestamp
-	ChunkIDs    []string
-	ParentID    string
-	Links       []string
+	ID               string
+	Name             string
+	IsDir            bool
+	Size             int64
+	Permissions      string
+	Ownership        Ownership
+	Timestamp        Timestamp
+	ChunkIDs         []string
+	ParentID         string
+	Links            []string
+	DirectoryEntries []string
 }
 
 func NewInode(name string, isDir bool) *Inode {
