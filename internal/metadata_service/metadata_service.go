@@ -175,3 +175,13 @@ func (m *MetadataService) listDir(inode *Inode) ([]*metadata.Inode, error) {
 	}
 	return inodes, nil
 }
+
+func (m *MetadataService) ListDir(
+	ctx context.Context,
+	req *metadata.ListDirRequest,
+) (
+	*metadata.ListDirResponse,
+	error,
+) {
+	log.Printf("Received ListDir Request: %v", req)
+}

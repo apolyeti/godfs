@@ -12,11 +12,16 @@ service MetadataService {
 }
 
 message ListDirRequest {
-  string name = 1;
+  string directory_id = 1;
+  string directory_name = 2;
+  string parent_id = 3;
+  bool recursive = 4;
+  bool include_hidden = 5;
+  int32 max_depth = 6;
 }
 
 message ListDirResponse {
-  repeated Inode inodes = 1;
+  repeated Inode entries = 1;
 }
 
 message CreateFileRequest {
