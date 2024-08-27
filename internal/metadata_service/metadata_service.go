@@ -24,8 +24,24 @@ type MetadataService struct {
 // NewMetadataService creates a new MetadataService
 
 func NewMetadataService() *MetadataService {
-	return &MetadataService{
+	m := &MetadataService{
 		inodes: make(map[string]*Inode),
+	}
+	m.initializeRootDirectory()
+	return m
+}
+
+// RootID is the ID of the root directory
+const RootID = "root"
+
+func (m *MetadataService) initializeRootDirectory() {
+	if _, ok := m.inodes[RootID]; !ok {
+		m.inodes[RootID] = &Inode{
+			ID:               RootID,
+			Name:             "/",
+			IsDir:            true,
+			DirectoryEntries: map[string]string{},
+		}
 	}
 }
 
@@ -93,7 +109,12 @@ func (m *MetadataService) CreateFile(
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	parentInode, ok := m.inodes[req.Parent]
+	parentId := req.Parent
+	if parentId == "" {
+		parentId = RootID
+	}
+
+	parentInode, ok := m.inodes[parentId]
 	if !ok {
 		return nil, ErrFileNotFound
 	}

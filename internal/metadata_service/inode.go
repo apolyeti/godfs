@@ -57,7 +57,7 @@ type Inode struct {
 }
 
 func NewInode(name string, isDir bool) *Inode {
-	return &Inode{
+	inode := &Inode{
 		ID:          uuid.New().String(),
 		Name:        name,
 		IsDir:       isDir,
@@ -73,6 +73,10 @@ func NewInode(name string, isDir bool) *Inode {
 		ParentID: "",
 		Links:    []string{},
 	}
+	if isDir {
+		inode.DirectoryEntries = make(map[string]string)
+	}
+	return inode
 }
 
 // AddLink adds a hard link to the inode.
