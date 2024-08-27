@@ -6,6 +6,7 @@ package metadata_service
 
 import (
 	"context"
+	"errors"
 	metadata "github.com/apolyeti/godfs/internal/metadata_service/service"
 	"log"
 	"sync"
@@ -158,12 +159,14 @@ func (m *MetadataService) GetFile(
 func (m *MetadataService) listDir(inode *Inode) ([]*metadata.Inode, error) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
+
 	if !inode.IsDir {
 		return nil, ErrNotDir
 	}
+
 	var inodes []*metadata.Inode
-	for _, name := range inode.DirectoryEntries {
-		inode, ok := m.inodes[name]
+	for _, id := range inode.DirectoryEntries {
+		inode, ok := m.inodes[id]
 		if !ok {
 			return nil, ErrFileNotFound
 		}
@@ -184,4 +187,43 @@ func (m *MetadataService) ListDir(
 	error,
 ) {
 	log.Printf("Received ListDir Request: %v", req)
+
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	var dirInode *Inode
+	var ok bool
+
+	if req.DirectoryId != "" {
+		// Look up by DirectoryID
+		dirInode, ok = m.inodes[req.DirectoryId]
+		if !ok {
+			return nil, ErrFileNotFound
+		}
+	} else if req.DirectoryName != "" && req.ParentId != "" {
+		// Look up by DirectoryName and ParentID
+		parentInode, ok := m.inodes[req.ParentId]
+		if !ok {
+			return nil, ErrFileNotFound
+		}
+		dirInodeID, exists := parentInode.DirectoryEntries[req.DirectoryName]
+		if !exists {
+			return nil, ErrFileNotFound
+		}
+		dirInode, ok = m.inodes[dirInodeID]
+		if !ok {
+			return nil, ErrFileNotFound
+		}
+	} else {
+		return nil, errors.New("directory identifier not provided")
+	}
+
+	inodes, err := m.listDir(dirInode)
+	if err != nil {
+		return nil, err
+	}
+
+	return &metadata.ListDirResponse{
+		Entries: inodes,
+	}, nil
 }
