@@ -3,7 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
-	metadata "github.com/apolyeti/godfs/internal/metadata_service/service"
+	client "github.com/apolyeti/godfs/internal/metadata_client"
+	metadata "github.com/apolyeti/godfs/internal/metadata_service/genproto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"log"
@@ -26,75 +27,72 @@ func main() {
 		}
 	}()
 
-	c := metadata.NewMetadataServiceClient(conn)
+	// Initialize the client
+	c := client.NewClient(metadata.NewMetadataServiceClient(conn))
 
-	// create requests
-	file1Req := &metadata.CreateFileRequest{
-		Name:  "file1.txt",
-		IsDir: false,
-	}
+	res, err := c.CreateFile(context.Background(), "file1")
 
-	file2Req := &metadata.CreateFileRequest{
-		Name:  "file2",
-		IsDir: false,
-	}
-
-	// create files
-	file1Res, err := c.CreateFile(context.Background(), file1Req)
 	if err != nil {
-		log.Fatalf("CreateFile failed: %v", err)
+		log.Fatalf("Error creating file: %v\n", err)
 	}
-	log.Printf("CreateFile Response: %v", file1Res)
 
-	file2Res, err := c.CreateFile(context.Background(), file2Req)
+	fmt.Printf("File created: %v\n", res)
+
+	res2, err := c.ListDir(context.Background())
+
 	if err != nil {
-		log.Fatalf("CreateFile failed: %v", err)
-	}
-	log.Printf("CreateFile Response: %v", file2Res)
-
-	dirReq := &metadata.CreateFileRequest{
-		Name:  "dir",
-		IsDir: true,
+		log.Fatalf("Error listing directory: %v\n", err)
 	}
 
-	dirRes, err := c.CreateFile(context.Background(), dirReq)
+	fmt.Printf("Directory contents: %v\n", res2)
+
+	// Make a directory now.
+
+	res3, err := c.Mkdir(context.Background(), "dir1")
+
 	if err != nil {
-		log.Fatalf("CreateFile failed: %v", err)
+		log.Fatalf("Error creating directory: %v\n", err)
 	}
-	log.Printf("CreateFile Response: %v", dirRes)
 
-	// add file into directory
-	file1Req.Parent = dirRes.Inode
-	file2Req.Parent = dirRes.Inode
-	file1Res, err = c.CreateFile(context.Background(), file1Req)
+	fmt.Printf("Directory created: %v\n", res3)
+
+	res4, err := c.CreateFile(context.Background(), "file2")
+
 	if err != nil {
-		log.Fatalf("CreateFile failed: %v", err)
+		log.Fatalf("Error creating file: %v\n", err)
 	}
 
-	file2Res, err = c.CreateFile(context.Background(), file2Req)
+	fmt.Printf("File created: %v\n", res4)
+
+	res5, err := c.ListDir(context.Background())
+
 	if err != nil {
-		log.Fatalf("CreateFile failed: %v", err)
+		log.Fatalf("Error listing directory: %v\n", err)
 	}
 
-	log.Printf("CreateFile Response: %v", file1Res)
-	log.Printf("CreateFile Response: %v", file2Res)
+	fmt.Printf("Directory contents: %v\n", res5)
 
-	// list directory
-	listDirReq := &metadata.ListDirRequest{
-		DirectoryId: dirRes.Inode,
-	}
+	// Change directory to dir1
+	err = c.ChangeDir("dir1")
 
-	listDirRes, err := c.ListDir(context.Background(), listDirReq)
 	if err != nil {
-		log.Fatalf("ListDir failed: %v", err)
+		log.Fatalf("Error changing directory: %v\n", err)
 	}
 
-	log.Printf("ListDir Response: %v", listDirRes)
+	res6, err := c.CreateFile(context.Background(), "file3")
 
-	// print all file names in the directory
-	fmt.Printf("Listing directory %s\n", dirRes.Name)
-	for _, inode := range listDirRes.Entries {
-		fmt.Println(inode.Name)
+	if err != nil {
+		log.Fatalf("Error creating file: %v\n", err)
 	}
+
+	fmt.Printf("File created: %v\n", res6)
+
+	res7, err := c.ListDir(context.Background())
+
+	if err != nil {
+		log.Fatalf("Error listing directory: %v\n", err)
+	}
+
+	fmt.Printf("Directory contents: %v\n", res7)
 
 }
