@@ -7,7 +7,7 @@ package metadata_service
 import (
 	"context"
 	"errors"
-	metadata "github.com/apolyeti/godfs/internal/metadata_service/service"
+	metadata "github.com/apolyeti/godfs/internal/metadata_service/genproto"
 	"log"
 	"sync"
 )

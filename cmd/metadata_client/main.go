@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	metadata "github.com/apolyeti/godfs/internal/metadata_service/service"
+	metadata "github.com/apolyeti/godfs/internal/metadata_service/genproto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"log"
