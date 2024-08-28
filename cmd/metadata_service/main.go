@@ -4,7 +4,7 @@ package main
 
 import (
 	metadata "github.com/apolyeti/godfs/internal/metadata_service"
-	metadataservice "github.com/apolyeti/godfs/internal/metadata_service/service"
+	service "github.com/apolyeti/godfs/internal/metadata_service/genproto"
 	"google.golang.org/grpc"
 	"log"
 	"net"
@@ -21,7 +21,7 @@ func main() {
 
 	grpcServer := grpc.NewServer()
 
-	metadataservice.RegisterMetadataServiceServer(grpcServer, s)
+	service.RegisterMetadataServiceServer(grpcServer, s)
 
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("Failed to serve: %v", err)

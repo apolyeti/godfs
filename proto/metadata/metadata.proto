@@ -1,11 +1,10 @@
 syntax = "proto3";
 
-package metadata;
+package metadata_service;
 
-option go_package = "proto/metadata";
+option go_package = "github.com/apolyeti/godfs/metadata_service";
 
 service MetadataService {
-  rpc GetFile(CreateFileRequest) returns (CreateFileResponse);
   rpc GetInode(GetInodeRequest) returns (Inode);
   rpc CreateFile(CreateFileRequest) returns (CreateFileResponse);
   rpc ListDir(ListDirRequest) returns (ListDirResponse);
