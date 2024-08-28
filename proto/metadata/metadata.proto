@@ -8,6 +8,17 @@ service MetadataService {
   rpc GetInode(GetInodeRequest) returns (Inode);
   rpc CreateFile(CreateFileRequest) returns (CreateFileResponse);
   rpc ListDir(ListDirRequest) returns (ListDirResponse);
+  rpc ChangeDir(ChangeDirRequest) returns (ChangeDirResponse);
+}
+
+message ChangeDirRequest {
+  string current_directory_id = 1;
+  string target_directory_id = 2;
+}
+
+message ChangeDirResponse {
+  string directory_id = 1;
+  string directory_name = 2;
 }
 
 message ListDirRequest {

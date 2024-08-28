@@ -116,7 +116,7 @@ func (m *MetadataService) CreateFile(
 
 	parentInode, ok := m.inodes[parentId]
 	if !ok {
-		return nil, ErrFileNotFound
+		return nil, errors.New("parent directory not found")
 	}
 
 	if !parentInode.IsDir {
@@ -244,5 +244,43 @@ func (m *MetadataService) ListDir(
 
 	return &metadata.ListDirResponse{
 		Entries: inodes,
+	}, nil
+}
+
+func (m *MetadataService) ChangeDir(
+	ctx context.Context,
+	req *metadata.ChangeDirRequest,
+) (
+	*metadata.ChangeDirResponse,
+	error,
+) {
+	log.Printf("Received ChangeDir Request: %v", req)
+
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	// Dir request only holds the name of the directory, so we must
+	// Go through every entry in the current directory to find
+	// the given name, and check if it is a directory.
+
+	var dirInode *Inode
+	var ok bool
+
+	if req.TargetDirectoryId != "" {
+		// Look up by DirectoryName
+		dirInodeID, exists := m.inodes[req.CurrentDirectoryId].DirectoryEntries[req.TargetDirectoryId]
+		if !exists {
+			return nil, ErrFileNotFound
+		}
+		dirInode, ok = m.inodes[dirInodeID]
+		if !ok {
+			return nil, ErrFileNotFound
+		}
+	} else {
+		return nil, errors.New("directory name not provided")
+	}
+
+	return &metadata.ChangeDirResponse{
+		DirectoryId: dirInode.ID,
 	}, nil
 }
