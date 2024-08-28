@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	metadata "github.com/apolyeti/godfs/internal/metadata_service/service"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -64,12 +65,19 @@ func main() {
 
 	// add file into directory
 	file1Req.Parent = dirRes.Inode
+	file2Req.Parent = dirRes.Inode
 	file1Res, err = c.CreateFile(context.Background(), file1Req)
 	if err != nil {
 		log.Fatalf("CreateFile failed: %v", err)
 	}
 
+	file2Res, err = c.CreateFile(context.Background(), file2Req)
+	if err != nil {
+		log.Fatalf("CreateFile failed: %v", err)
+	}
+
 	log.Printf("CreateFile Response: %v", file1Res)
+	log.Printf("CreateFile Response: %v", file2Res)
 
 	// list directory
 	listDirReq := &metadata.ListDirRequest{
@@ -82,5 +90,11 @@ func main() {
 	}
 
 	log.Printf("ListDir Response: %v", listDirRes)
+
+	// print all file names in the directory
+	fmt.Printf("Listing directory %s\n", dirRes.Name)
+	for _, inode := range listDirRes.Entries {
+		fmt.Println(inode.Name)
+	}
 
 }
