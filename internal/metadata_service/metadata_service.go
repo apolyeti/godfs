@@ -178,8 +178,6 @@ func (m *MetadataService) GetFile(
 }
 
 func (m *MetadataService) listDir(inode *Inode) ([]*metadata.Inode, error) {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
 
 	if !inode.IsDir {
 		return nil, ErrNotDir
