@@ -1,8 +1,18 @@
 package metadata_client
 
-import "github.com/apolyeti/godfs/internal/metadata_service/genproto/github.com/apolyeti/godfs/metadata_service"
+import (
+	metaService "github.com/apolyeti/godfs/internal/metadata_service"
+	metaGrpc "github.com/apolyeti/godfs/internal/metadata_service/genproto"
+)
 
 type Client struct {
-	metadataClient metadata_service.MetadataServiceClient
+	metadataClient metaGrpc.MetadataServiceClient
 	currentDir     string
+}
+
+func NewClient(metadataClient metaGrpc.MetadataServiceClient) *Client {
+	return &Client{
+		metadataClient: metadataClient,
+		currentDir:     metaService.RootID,
+	}
 }
