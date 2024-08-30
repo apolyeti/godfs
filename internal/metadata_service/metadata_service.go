@@ -282,11 +282,9 @@ func (m *MetadataService) ChangeDir(
 		// Go to root
 		currentInode = m.inodes[RootID]
 	default:
-		// need to find the target directory by name in the current directory's entries
-		// since the name is given instead of the ID
-
-		// targetDirectoryId is the NAME not the ID, so we cannot reference it directly
-		// we need to find the ID of the target directory by looking up the name in the current directory's entries
+		// Because the client provides the NAME of the target directory,
+		// We need to look up the ID of the target directory, which is done
+		// Using the DirectoryEntries map, which maps the name to the ID of the directory inode.
 
 		targetDirectoryId, exists := currentInode.DirectoryEntries[req.TargetDirectoryId]
 		if !exists {
