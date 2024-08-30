@@ -20,7 +20,7 @@ func NewClient(metadataClient metaGrpc.MetadataServiceClient) *Client {
 
 func (c *Client) ChangeDir(dir string) error {
 	req := &metaGrpc.ChangeDirRequest{
-		CurrentDirectoryId: c.CurrentDir(),
+		CurrentDirectoryId: c.currentDir,
 		TargetDirectoryId:  dir,
 	}
 

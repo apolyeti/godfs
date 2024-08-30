@@ -44,7 +44,11 @@ func main() {
 		log.Fatalf("Error listing directory: %v\n", err)
 	}
 
-	fmt.Printf("Directory contents: %v\n", res2)
+	fmt.Printf("Directory contents of %v:\n", c.CurrentDir())
+
+	for _, entry := range res2.Entries {
+		fmt.Printf("%v\n", entry.Name)
+	}
 
 	// Make a directory now.
 
@@ -54,7 +58,7 @@ func main() {
 		log.Fatalf("Error creating directory: %v\n", err)
 	}
 
-	fmt.Printf("Directory created: %v\n", res3)
+	fmt.Printf("Directory created: %v\n", res3.Name)
 
 	res4, err := c.CreateFile(context.Background(), "file2")
 
@@ -70,7 +74,10 @@ func main() {
 		log.Fatalf("Error listing directory: %v\n", err)
 	}
 
-	fmt.Printf("Directory contents: %v\n", res5)
+	fmt.Printf("Contents of %v:\n", c.CurrentDir())
+	for _, entry := range res5.Entries {
+		fmt.Printf("%v\n", entry.Name)
+	}
 
 	// Change directory to dir1
 	err = c.ChangeDir("dir1")
@@ -85,7 +92,7 @@ func main() {
 		log.Fatalf("Error creating file: %v\n", err)
 	}
 
-	fmt.Printf("File created: %v\n", res6)
+	fmt.Printf("File created: %v\n", res6.Name)
 
 	res7, err := c.ListDir(context.Background())
 
@@ -93,6 +100,28 @@ func main() {
 		log.Fatalf("Error listing directory: %v\n", err)
 	}
 
-	fmt.Printf("Directory contents: %v\n", res7)
+	fmt.Printf("Directory contents of %v:\n", c.CurrentDir())
 
+	for _, entry := range res7.Entries {
+		fmt.Printf("%v\n", entry.Name)
+	}
+
+	fmt.Printf("Changing directory back to root\n")
+	// Change directory back one
+	err = c.ChangeDir("..")
+
+	if err != nil {
+		log.Fatalf("Error changing directory: %v\n", err)
+	}
+
+	res8, err := c.ListDir(context.Background())
+
+	if err != nil {
+		log.Fatalf("Error listing directory: %v\n", err)
+	}
+
+	fmt.Printf("Directory contents of %v:\n", c.CurrentDir())
+	for _, entry := range res8.Entries {
+		fmt.Printf("%v\n", entry.Name)
+	}
 }

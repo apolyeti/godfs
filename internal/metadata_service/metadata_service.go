@@ -63,7 +63,7 @@ func (m *MetadataService) CreateInode(
 	*metadata.CreateFileResponse,
 	error,
 ) {
-	log.Printf("Received CreateInode Request: %v", req)
+	log.Printf("CREATEINODE\t%v", req)
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	if _, ok := m.inodes[req.Name]; ok {
@@ -104,12 +104,13 @@ func (m *MetadataService) CreateFile(
 	*metadata.CreateFileResponse,
 	error,
 ) {
-	log.Printf("Received CreateFile Request: %v", req)
+	log.Printf("CREATEFILE\t%v", req)
 
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
 	parentId := req.Parent
+
 	if parentId == "" {
 		parentId = RootID
 	}
@@ -133,6 +134,8 @@ func (m *MetadataService) CreateFile(
 
 	m.inodes[inode.ID] = inode
 
+	inode.ParentID = parentId
+
 	return &metadata.CreateFileResponse{
 		Name:  req.Name,
 		Inode: inode.ID,
@@ -145,7 +148,7 @@ func (m *MetadataService) GetFile(
 	*metadata.CreateFileResponse,
 	error,
 ) {
-	log.Printf("Received GetFile Request: %v", req)
+	log.Printf("GETFILE\t%v", req)
 
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -205,7 +208,7 @@ func (m *MetadataService) ListDir(
 	*metadata.ListDirResponse,
 	error,
 ) {
-	log.Printf("Received ListDir Request: %v", req)
+	log.Printf("LISTDIR\t%v", req)
 
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -254,33 +257,51 @@ func (m *MetadataService) ChangeDir(
 	*metadata.ChangeDirResponse,
 	error,
 ) {
-	log.Printf("Received ChangeDir Request: %v", req)
+	log.Printf("CHANGEDIR\t%v", req)
 
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	// Dir request only holds the name of the directory, so we must
-	// Go through every entry in the current directory to find
-	// the given name, and check if it is a directory.
+	currentInode, ok := m.inodes[req.CurrentDirectoryId]
+	if !ok {
+		return nil, ErrFileNotFound
+	}
 
-	var dirInode *Inode
-	var ok bool
+	switch req.TargetDirectoryId {
+	case "..":
+		if currentInode.ID != RootID {
+			parentInode, ok := m.inodes[currentInode.ParentID]
+			if !ok {
+				return nil, ErrFileNotFound
+			}
+			currentInode = parentInode
+		}
+	case ".":
+		// Do nothing
+	case "":
+		// Go to root
+		currentInode = m.inodes[RootID]
+	default:
+		// need to find the target directory by name in the current directory's entries
+		// since the name is given instead of the ID
 
-	if req.TargetDirectoryId != "" {
-		// Look up by DirectoryName
-		dirInodeID, exists := m.inodes[req.CurrentDirectoryId].DirectoryEntries[req.TargetDirectoryId]
+		// targetDirectoryId is the NAME not the ID, so we cannot reference it directly
+		// we need to find the ID of the target directory by looking up the name in the current directory's entries
+
+		targetDirectoryId, exists := currentInode.DirectoryEntries[req.TargetDirectoryId]
 		if !exists {
 			return nil, ErrFileNotFound
 		}
-		dirInode, ok = m.inodes[dirInodeID]
+
+		targetInode, ok := m.inodes[targetDirectoryId]
 		if !ok {
 			return nil, ErrFileNotFound
 		}
-	} else {
-		return nil, errors.New("directory name not provided")
+
+		currentInode = targetInode
 	}
 
 	return &metadata.ChangeDirResponse{
-		DirectoryId: dirInode.ID,
+		DirectoryId: currentInode.ID,
 	}, nil
 }
