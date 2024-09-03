@@ -124,4 +124,23 @@ func main() {
 	for _, entry := range res8.Entries {
 		fmt.Printf("%v\n", entry.Name)
 	}
+
+	// Change directory to dir1
+	err = c.ChangeDir("dir1")
+
+	if err != nil {
+		log.Fatalf("Error changing directory: %v\n", err)
+	}
+
+	res9, err := c.ListDir(context.Background())
+
+	if err != nil {
+		log.Fatalf("Error listing directory: %v\n", err)
+	}
+
+	fmt.Printf("Directory contents of %v:\n", c.CurrentDir())
+
+	for _, entry := range res9.Entries {
+		fmt.Printf("%v\n", entry.Name)
+	}
 }

@@ -300,6 +300,7 @@ func (m *MetadataService) ChangeDir(
 	}
 
 	return &metadata.ChangeDirResponse{
-		DirectoryId: currentInode.ID,
+		DirectoryId:   currentInode.ID,
+		DirectoryName: currentInode.Name,
 	}, nil
 }

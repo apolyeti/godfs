@@ -9,12 +9,14 @@ import (
 type Client struct {
 	metadataClient metaGrpc.MetadataServiceClient
 	currentDir     string
+	currentDirName string
 }
 
 func NewClient(metadataClient metaGrpc.MetadataServiceClient) *Client {
 	return &Client{
 		metadataClient: metadataClient,
 		currentDir:     metaService.RootID,
+		currentDirName: "/",
 	}
 }
 
@@ -30,11 +32,12 @@ func (c *Client) ChangeDir(dir string) error {
 	}
 
 	c.currentDir = res.DirectoryId
+	c.currentDirName = res.DirectoryName
 	return nil
 }
 
 func (c *Client) CurrentDir() string {
-	return c.currentDir
+	return c.currentDirName
 }
 
 func (c *Client) CreateFile(ctx context.Context, name string) (*metaGrpc.CreateFileResponse, error) {
