@@ -8,6 +8,8 @@ import (
 	"google.golang.org/grpc"
 	"log"
 	"net"
+	"os"
+	"os/signal"
 )
 
 func main() {
@@ -18,6 +20,19 @@ func main() {
 	}
 
 	s := metadata.NewMetadataService()
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+
+	go func() {
+		<-c
+		log.Println("Shutting down server...")
+		s.Shutdown()
+		err := lis.Close()
+		if err != nil {
+			log.Fatalf("Error closing listener: %v", err)
+		}
+	}()
 
 	grpcServer := grpc.NewServer()
 

@@ -6,9 +6,11 @@ package metadata_service
 
 import (
 	"context"
+	"encoding/gob"
 	"errors"
 	metadata "github.com/apolyeti/godfs/internal/metadata_service/genproto"
 	"log"
+	"os"
 	"sync"
 )
 
@@ -28,6 +30,10 @@ func NewMetadataService() *MetadataService {
 		inodes: make(map[string]*Inode),
 	}
 	m.initializeRootDirectory()
+	err := m.LoadFromDisk()
+	if err != nil {
+		log.Printf("No previous metadata found, starting with empty state")
+	}
 	return m
 }
 
@@ -303,4 +309,43 @@ func (m *MetadataService) ChangeDir(
 		DirectoryId:   currentInode.ID,
 		DirectoryName: currentInode.Name,
 	}, nil
+}
+
+func (m *MetadataService) SaveToDisk() error {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	file, err := os.Create(".storage/metadata.gob")
+	if err != nil {
+		return err
+	}
+
+	enc := gob.NewEncoder(file)
+	err = enc.Encode(m.inodes)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *MetadataService) LoadFromDisk() error {
+	file, err := os.Open(".storage/metadata.gob")
+	if err != nil {
+		return err
+	}
+
+	dec := gob.NewDecoder(file)
+	err = dec.Decode(&m.inodes)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *MetadataService) Shutdown() {
+	err := m.SaveToDisk()
+	if err != nil {
+		log.Printf("Error saving metadata to disk: %v", err)
+	}
 }
