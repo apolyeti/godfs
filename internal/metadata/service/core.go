@@ -270,3 +270,41 @@ func (m *MetadataService) ChangeDir(
 		DirectoryName: currentInode.Name,
 	}, nil
 }
+
+func (m *MetadataService) WriteFile(
+	ctx context.Context,
+	req *metadata.WriteFileRequest,
+) (
+	*metadata.WriteFileResponse,
+	error,
+) {
+	log.Printf("WRITEFILE\t%v", req)
+
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	// Get the inode of the file to write to
+	currDir := req.CurrentDirectoryId
+
+	// Name of file should be in currDir entries
+	inodeId, exists := m.inodes[currDir].DirectoryEntries[req.FileName]
+	if !exists {
+		return nil, ErrFileNotFound
+	}
+
+	inode, ok := m.inodes[inodeId]
+	if !ok {
+		return nil, ErrFileNotFound
+	}
+
+	// Check if inode is a directory
+	if inode.IsDir {
+		return nil, ErrIsDir
+	}
+
+	// Write to the file
+	inode.Size = int64(len(req.Data))
+
+	// Make data node write the data
+	return nil, nil
+}
