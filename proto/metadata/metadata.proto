@@ -9,6 +9,27 @@ service MetadataService {
   rpc CreateFile(CreateFileRequest) returns (CreateFileResponse);
   rpc ListDir(ListDirRequest) returns (ListDirResponse);
   rpc ChangeDir(ChangeDirRequest) returns (ChangeDirResponse);
+  rpc WriteFile(WriteFileRequest) returns (WriteFileResponse);
+  rpc ReadFile(ReadFileRequest) returns (ReadFileResponse);
+}
+
+message WriteFileRequest {
+  string file_name = 1;
+  bytes data = 2;
+}
+
+message WriteFileResponse {
+  string file_name = 1;
+  string inode = 2;
+}
+
+message ReadFileRequest {
+  string file_name = 1;
+}
+
+message ReadFileResponse {
+  string file_name = 1;
+  bytes data = 2;
 }
 
 message ChangeDirRequest {
