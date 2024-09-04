@@ -8,7 +8,7 @@ import (
 	"context"
 	"encoding/gob"
 	"errors"
-	metadata "github.com/apolyeti/godfs/internal/metadata_service/genproto"
+	metadata "github.com/apolyeti/godfs/internal/metadata/service/genproto"
 	"log"
 	"os"
 	"sync"

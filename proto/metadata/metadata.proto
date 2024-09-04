@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package metadata_service;
 
-option go_package = "internal/metadata_service/genproto";
+option go_package = "internal/metadata/service/genproto";
 
 service MetadataService {
   rpc GetInode(GetInodeRequest) returns (Inode);

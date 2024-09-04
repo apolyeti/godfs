@@ -3,8 +3,8 @@
 package main
 
 import (
-	metadata "github.com/apolyeti/godfs/internal/metadata_service"
-	service "github.com/apolyeti/godfs/internal/metadata_service/genproto"
+	metadata "github.com/apolyeti/godfs/internal/metadata/service"
+	service "github.com/apolyeti/godfs/internal/metadata/service/genproto"
 	"google.golang.org/grpc"
 	"log"
 	"net"
