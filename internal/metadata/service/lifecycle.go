@@ -13,15 +13,23 @@ import (
 // mu: RWMutex for concurrent access to inodes
 type MetadataService struct {
 	metadata.UnimplementedMetadataServiceServer
-	inodes map[string]*Inode
-	mu     sync.RWMutex
+	inodes       map[string]*Inode
+	mu           sync.RWMutex
+	dataNodes    []string
+	numDataNodes int
 }
 
 // NewMetadataService creates a new MetadataService
 
 func NewMetadataService() *MetadataService {
 	m := &MetadataService{
-		inodes: make(map[string]*Inode),
+		inodes:       make(map[string]*Inode),
+		numDataNodes: 3,
+		dataNodes: []string{
+			"localhost:50051",
+			"localhost:50052",
+			"localhost:50053",
+		},
 	}
 	m.initializeRootDirectory()
 	err := m.LoadFromDisk()

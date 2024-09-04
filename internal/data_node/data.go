@@ -3,7 +3,14 @@
 
 package data_node
 
+import (
+	"context"
+	p "github.com/apolyeti/godfs/internal/data_node/genproto"
+	"os"
+)
+
 const chunkSize = 4 * 1024 * 1024
+const chunkDir = ".storage/chunks/"
 
 // DataNode represents a node that stores file data chunks.
 type DataNode struct {
@@ -18,31 +25,68 @@ type DataNode struct {
 	Chunks map[string][]byte
 }
 
-// NewDataNode creates a new DataNode with the given ID
+// NewDataNode creates a new DataNode
 func NewDataNode(id string) *DataNode {
 	return &DataNode{
 		ID:     id,
 		Chunks: make(map[string][]byte),
 	}
 }
-
-// WriteChunk writes the given chunk data to the data node
-func (d *DataNode) WriteChunk(chunkID string, data []byte) error {
-	d.Chunks[chunkID] = data
-	return nil
-}
-
-// ReadChunk reads the chunk data with the given chunk ID from the data node
-func (d *DataNode) ReadChunk(chunkID string) ([]byte, error) {
-	data, ok := d.Chunks[chunkID]
-	if !ok {
-		return nil, ErrChunkNotFound
+func (d *DataNode) WriteChunk(
+	ctx context.Context,
+	req *p.WriteChunkRequest,
+) (
+	*p.WriteChunkResponse, error,
+) {
+	err := os.MkdirAll(chunkDir, os.ModePerm)
+	if err != nil {
+		return nil, err
 	}
-	return data, nil
+
+	file, err := os.Create(chunkDir + req.ChunkId)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = file.Write(req.Data)
+	if err != nil {
+		return nil, err
+	}
+
+	err = file.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	d.Chunks[req.ChunkId] = req.Data
+	return &p.WriteChunkResponse{}, nil
 }
 
-// DeleteChunk deletes the chunk data with the given chunk ID from the data node
-func (d *DataNode) DeleteChunk(chunkID string) error {
-	delete(d.Chunks, chunkID)
-	return nil
+func (d *DataNode) ReadChunk(
+	ctx context.Context,
+	req *p.ReadChunkRequest,
+) (
+	*p.ReadChunkResponse, error,
+) {
+	data, ok := d.Chunks[req.ChunkId]
+	if !ok {
+		return nil, os.ErrNotExist
+	}
+
+	return &p.ReadChunkResponse{Data: data}, nil
+}
+
+func (d *DataNode) DeleteChunk(
+	ctx context.Context,
+	req *p.DeleteChunkRequest,
+) (
+	*p.DeleteChunkResponse, error,
+) {
+	err := os.Remove(chunkDir + req.ChunkId)
+	if err != nil {
+		return nil, err
+	}
+
+	delete(d.Chunks, req.ChunkId)
+	return &p.DeleteChunkResponse{}, nil
 }

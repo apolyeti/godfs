@@ -7,7 +7,11 @@ package metadata_service
 import (
 	"context"
 	"errors"
+	"fmt"
+	pb "github.com/apolyeti/godfs/internal/data_node/genproto"
 	metadata "github.com/apolyeti/godfs/internal/metadata/service/genproto"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"log"
 )
 
@@ -283,28 +287,87 @@ func (m *MetadataService) WriteFile(
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	// Get the inode of the file to write to
 	currDir := req.CurrentDirectoryId
 
-	// Name of file should be in currDir entries
+	if currDir == "" {
+		currDir = RootID
+	}
+
 	inodeId, exists := m.inodes[currDir].DirectoryEntries[req.FileName]
+
 	if !exists {
 		return nil, ErrFileNotFound
 	}
 
 	inode, ok := m.inodes[inodeId]
+
 	if !ok {
 		return nil, ErrFileNotFound
 	}
 
-	// Check if inode is a directory
 	if inode.IsDir {
 		return nil, ErrIsDir
 	}
 
-	// Write to the file
-	inode.Size = int64(len(req.Data))
+	chunks := chunkFile(req.Data, 1024)
 
-	// Make data node write the data
-	return nil, nil
+	for i, chunk := range chunks {
+		chunkId := fmt.Sprintf("%s-%d", inode.ID, i)
+		dataNode := m.dataNodes[i%len(m.dataNodes)]
+
+		err := storeChunkOnDataNode(chunkId, chunk, dataNode)
+
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &metadata.WriteFileResponse{
+		FileName: req.FileName,
+	}, nil
+}
+
+func chunkFile(data []byte, chunkSize int) [][]byte {
+	var chunks [][]byte
+
+	for i := 0; i < len(data); i += chunkSize {
+		end := i + chunkSize
+		if end > len(data) {
+			end = len(data)
+		}
+		chunks = append(chunks, data[i:end])
+	}
+	return chunks
+}
+
+func storeChunkOnDataNode(chunkId string, chunkData []byte, dataNode string) error {
+	var conn *grpc.ClientConn
+
+	conn, err := grpc.NewClient(
+		dataNode,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		if err := conn.Close(); err != nil {
+			log.Fatalf("Failed to close connection: %v", err)
+		}
+	}()
+
+	client := pb.NewDataNodeServiceClient(conn)
+
+	_, err = client.WriteChunk(context.Background(), &pb.WriteChunkRequest{
+		ChunkId: chunkId,
+		Data:    chunkData,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
