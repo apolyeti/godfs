@@ -76,3 +76,22 @@ func (c *Client) ListDir(ctx context.Context) (*gRpc.ListDirResponse, error) {
 
 	return c.metadataClient.ListDir(ctx, req)
 }
+
+func (c *Client) WriteFile(ctx context.Context, fileName string, data []byte) (*gRpc.WriteFileResponse, error) {
+	req := &gRpc.WriteFileRequest{
+		CurrentDirectoryId: c.currentDir,
+		FileName:           fileName,
+		Data:               data,
+	}
+
+	return c.metadataClient.WriteFile(ctx, req)
+}
+
+func (c *Client) ReadFile(ctx context.Context, fileName string) (*gRpc.ReadFileResponse, error) {
+	req := &gRpc.ReadFileRequest{
+		CurrentDirectoryId: c.currentDir,
+		FileName:           fileName,
+	}
+
+	return c.metadataClient.ReadFile(ctx, req)
+}

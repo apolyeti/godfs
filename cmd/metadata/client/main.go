@@ -143,4 +143,47 @@ func main() {
 	for _, entry := range res9.Entries {
 		fmt.Printf("%v\n", entry.Name)
 	}
+
+	// Write a file to dir1
+	res10, err := c.CreateFile(context.Background(), "file4")
+
+	if err != nil {
+		log.Fatalf("Error creating file: %v\n", err)
+	}
+
+	fmt.Printf("File created: %v\n", res10.Name)
+
+	// Now write something in file4
+	res11, err := c.WriteFile(context.Background(), "file4", []byte("Hello, World!"))
+
+	if err != nil {
+		log.Fatalf("Error writing file: %v\n", err)
+	}
+
+	fmt.Printf("File written: %v\n", res11.FileName)
+
+	// Now read the file
+
+	res12, err := c.ReadFile(context.Background(), "file4")
+
+	if err != nil {
+		log.Fatalf("Error reading file: %v\n", err)
+	}
+
+	fmt.Printf("File read: %v\n", res12.Data)
+
+	// list the directory again
+
+	res13, err := c.ListDir(context.Background())
+
+	if err != nil {
+		log.Fatalf("Error listing directory: %v\n", err)
+	}
+
+	fmt.Printf("Directory contents of %v:\n", c.CurrentDir())
+
+	for _, entry := range res13.Entries {
+		fmt.Printf("%v\n", entry.Name)
+	}
+
 }
