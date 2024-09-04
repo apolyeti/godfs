@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
-	client "github.com/apolyeti/godfs/internal/metadata_client"
-	metadata "github.com/apolyeti/godfs/internal/metadata_service/genproto"
+	client "github.com/apolyeti/godfs/internal/metadata/client"
+	service "github.com/apolyeti/godfs/internal/metadata/service/genproto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"log"
@@ -28,7 +28,7 @@ func main() {
 	}()
 
 	// Initialize the client
-	c := client.NewClient(metadata.NewMetadataServiceClient(conn))
+	c := client.NewClient(service.NewMetadataServiceClient(conn))
 
 	res, err := c.CreateFile(context.Background(), "file1")
 

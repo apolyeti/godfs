@@ -2,8 +2,8 @@ package metadata_client
 
 import (
 	"context"
-	metaService "github.com/apolyeti/godfs/internal/metadata_service"
-	metaGrpc "github.com/apolyeti/godfs/internal/metadata_service/genproto"
+	metaService "github.com/apolyeti/godfs/internal/metadata/service"
+	metaGrpc "github.com/apolyeti/godfs/internal/metadata/service/genproto"
 )
 
 type Client struct {
