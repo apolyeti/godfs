@@ -1,7 +1,7 @@
 // package data_node is responsible for storing and retrieving file data chunks.
 // This is meant to be run on multiple nodes to distribute the storage of file data.
 
-package data_node
+package data_service
 
 import (
 	"context"

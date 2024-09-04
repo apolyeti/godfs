@@ -2,17 +2,17 @@ package metadata_client
 
 import (
 	"context"
+	gRpc "github.com/apolyeti/godfs/internal/metadata/genproto"
 	metaService "github.com/apolyeti/godfs/internal/metadata/service"
-	metaGrpc "github.com/apolyeti/godfs/internal/metadata/service/genproto"
 )
 
 type Client struct {
-	metadataClient metaGrpc.MetadataServiceClient
+	metadataClient gRpc.MetadataServiceClient
 	currentDir     string
 	currentDirName string
 }
 
-func NewClient(metadataClient metaGrpc.MetadataServiceClient) *Client {
+func NewClient(metadataClient gRpc.MetadataServiceClient) *Client {
 	return &Client{
 		metadataClient: metadataClient,
 		currentDir:     metaService.RootID,
@@ -21,7 +21,7 @@ func NewClient(metadataClient metaGrpc.MetadataServiceClient) *Client {
 }
 
 func (c *Client) ChangeDir(dir string) error {
-	req := &metaGrpc.ChangeDirRequest{
+	req := &gRpc.ChangeDirRequest{
 		CurrentDirectoryId: c.currentDir,
 		TargetDirectoryId:  dir,
 	}
@@ -40,8 +40,14 @@ func (c *Client) CurrentDir() string {
 	return c.currentDirName
 }
 
-func (c *Client) CreateFile(ctx context.Context, name string) (*metaGrpc.CreateFileResponse, error) {
-	req := &metaGrpc.CreateFileRequest{
+func (c *Client) CurrentDirId() string { return c.currentDir }
+
+func (c *Client) CreateFile(ctx context.Context,
+	name string,
+) (
+	*gRpc.CreateFileResponse, error,
+) {
+	req := &gRpc.CreateFileRequest{
 		Parent: c.currentDir,
 		Name:   name,
 	}
@@ -49,8 +55,12 @@ func (c *Client) CreateFile(ctx context.Context, name string) (*metaGrpc.CreateF
 	return c.metadataClient.CreateFile(ctx, req)
 }
 
-func (c *Client) Mkdir(ctx context.Context, name string) (*metaGrpc.CreateFileResponse, error) {
-	req := &metaGrpc.CreateFileRequest{
+func (c *Client) Mkdir(ctx context.Context,
+	name string,
+) (
+	*gRpc.CreateFileResponse, error,
+) {
+	req := &gRpc.CreateFileRequest{
 		Parent: c.currentDir,
 		Name:   name,
 		IsDir:  true,
@@ -59,8 +69,8 @@ func (c *Client) Mkdir(ctx context.Context, name string) (*metaGrpc.CreateFileRe
 	return c.metadataClient.CreateFile(ctx, req)
 }
 
-func (c *Client) ListDir(ctx context.Context) (*metaGrpc.ListDirResponse, error) {
-	req := &metaGrpc.ListDirRequest{
+func (c *Client) ListDir(ctx context.Context) (*gRpc.ListDirResponse, error) {
+	req := &gRpc.ListDirRequest{
 		DirectoryId: c.currentDir,
 	}
 

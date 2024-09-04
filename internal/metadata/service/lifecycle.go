@@ -2,7 +2,7 @@ package metadata_service
 
 import (
 	"encoding/gob"
-	metadata "github.com/apolyeti/godfs/internal/metadata/service/genproto"
+	metadata "github.com/apolyeti/godfs/internal/metadata/genproto"
 	"log"
 	"os"
 	"sync"

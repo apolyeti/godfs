@@ -26,6 +26,7 @@ message WriteFileResponse {
 
 message ReadFileRequest {
   string file_name = 1;
+  string current_directory_id = 2;
 }
 
 message ReadFileResponse {

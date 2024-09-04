@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	client "github.com/apolyeti/godfs/internal/metadata/client"
-	service "github.com/apolyeti/godfs/internal/metadata/service/genproto"
+	service "github.com/apolyeti/godfs/internal/metadata/genproto"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"log"
