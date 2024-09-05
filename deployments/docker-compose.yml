@@ -1,0 +1,33 @@
+version: '3'
+services:
+  metadata_service:
+    build:
+      context: .
+      dockerfile: deployments/metadata/Dockerfile
+    ports:
+      - "8080:8080"  # Expose metadata service port
+    depends_on:
+      - data_node_1
+      - data_node_2
+      - data_node_3
+
+  data_node_1:
+    build:
+      context: .
+      dockerfile: deployments/data_node/Dockerfile  # Adjust the Dockerfile path for your data node
+    ports:
+      - "50051:50051"  # Expose port 50051 for the first data node
+
+  data_node_2:
+    build:
+      context: .
+      dockerfile: deployments/data_node/Dockerfile
+    ports:
+      - "50052:50052"  # Expose port 50052 for the second data node
+
+  data_node_3:
+    build:
+      context: .
+      dockerfile: deployments/data_node/Dockerfile
+    ports:
+      - "50053:50053"  # Expose port 50053 for the third data node

@@ -3,8 +3,8 @@
 package main
 
 import (
-	service "github.com/apolyeti/godfs/internal/metadata/genproto"
-	metadata "github.com/apolyeti/godfs/internal/metadata/service"
+	p "github.com/apolyeti/godfs/internal/metadata/genproto"
+	service "github.com/apolyeti/godfs/internal/metadata/service"
 	"google.golang.org/grpc"
 	"log"
 	"net"
@@ -19,7 +19,7 @@ func main() {
 		log.Fatalf("Failed to listen: %v", err)
 	}
 
-	s := metadata.NewMetadataService()
+	s := service.NewMetadataService()
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
@@ -36,7 +36,7 @@ func main() {
 
 	grpcServer := grpc.NewServer()
 
-	service.RegisterMetadataServiceServer(grpcServer, s)
+	p.RegisterMetadataServiceServer(grpcServer, s)
 
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("Failed to serve: %v", err)
