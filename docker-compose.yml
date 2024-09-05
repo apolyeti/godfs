@@ -10,13 +10,17 @@ services:
       - data_node_1
       - data_node_2
       - data_node_3
+    networks:
+      - dcs_net
 
   data_node_1:
     build:
       context: .
-      dockerfile: deployments/data_node/Dockerfile  # Adjust the Dockerfile path for your data node
+      dockerfile: deployments/data_node/Dockerfile
     ports:
       - "50051:50051"  # Expose port 50051 for the first data node
+    networks:
+      - dcs_net
 
   data_node_2:
     build:
@@ -24,6 +28,8 @@ services:
       dockerfile: deployments/data_node/Dockerfile
     ports:
       - "50052:50052"  # Expose port 50052 for the second data node
+    networks:
+      - dcs_net
 
   data_node_3:
     build:
@@ -31,3 +37,9 @@ services:
       dockerfile: deployments/data_node/Dockerfile
     ports:
       - "50053:50053"  # Expose port 50053 for the third data node
+    networks:
+      - dcs_net
+
+networks:
+  dcs_net:
+    driver: bridge

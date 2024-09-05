@@ -26,9 +26,9 @@ func NewMetadataService() *MetadataService {
 		inodes:       make(map[string]*Inode),
 		numDataNodes: 3,
 		dataNodes: []string{
-			"localhost:50051",
-			"localhost:50052",
-			"localhost:50053",
+			"data_node_1:50051",
+			"data_node_2:50052",
+			"data_node_3:50053",
 		},
 	}
 	m.initializeRootDirectory()

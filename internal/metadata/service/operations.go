@@ -52,6 +52,7 @@ func (m *MetadataService) WriteFile(
 		dataNode := m.dataNodes[i%len(m.dataNodes)]
 
 		err := storeChunkOnDataNode(chunkId, chunk, dataNode)
+		inode.AddChunk(chunkId)
 
 		if err != nil {
 			return nil, err
