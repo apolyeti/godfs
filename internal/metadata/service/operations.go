@@ -3,7 +3,6 @@ package metadata_service
 import (
 	"context"
 	"fmt"
-	dc "github.com/apolyeti/godfs/internal/data_node/client"
 	pb "github.com/apolyeti/godfs/internal/data_node/genproto"
 	metadata "github.com/apolyeti/godfs/internal/metadata/genproto"
 	"google.golang.org/grpc"
@@ -82,9 +81,10 @@ func chunkFile(data []byte, chunkSize int) [][]byte {
 func storeChunkOnDataNode(chunkId string, chunkData []byte, dataNode string) error {
 	var conn *grpc.ClientConn
 
-	conn, err := grpc.NewClient(
+	// Correct method to dial gRPC server
+	conn, err := grpc.Dial(
 		dataNode,
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithTransportCredentials(insecure.NewCredentials()), // or WithInsecure()
 	)
 
 	if err != nil {
@@ -97,9 +97,15 @@ func storeChunkOnDataNode(chunkId string, chunkData []byte, dataNode string) err
 		}
 	}()
 
-	client := dc.NewClient(pb.NewDataNodeServiceClient(conn))
+	client := pb.NewDataNodeServiceClient(conn)
 
-	err = client.WriteChunk(chunkId, chunkData)
+	// Prepare the request for writing chunk data
+	req := &pb.WriteChunkRequest{
+		ChunkId: chunkId,
+		Data:    chunkData,
+	}
+
+	_, err = client.WriteChunk(context.Background(), req)
 
 	if err != nil {
 		return err
@@ -144,8 +150,8 @@ func (m *MetadataService) ReadFile(
 
 	var data []byte
 
-	for i := 0; ; i++ {
-		chunkId := fmt.Sprintf("%s-%d", inode.ID, i)
+	// Loop through stored chunks for the file
+	for i, chunkId := range inode.ChunkIDs {
 		dataNode := m.dataNodes[i%len(m.dataNodes)]
 
 		chunkData, err := retrieveChunkFromDataNode(chunkId, dataNode)
@@ -154,24 +160,22 @@ func (m *MetadataService) ReadFile(
 			return nil, err
 		}
 
-		if len(chunkData) == 0 {
-			break
-		}
-
 		data = append(data, chunkData...)
 	}
 
 	return &metadata.ReadFileResponse{
-		Data: data,
+		FileName: req.FileName,
+		Data:     data,
 	}, nil
 }
 
 func retrieveChunkFromDataNode(chunkId string, dataNode string) ([]byte, error) {
 	var conn *grpc.ClientConn
 
+	// Correct method to dial gRPC server
 	conn, err := grpc.NewClient(
 		dataNode,
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithTransportCredentials(insecure.NewCredentials()), // or WithInsecure()
 	)
 
 	if err != nil {
@@ -184,13 +188,19 @@ func retrieveChunkFromDataNode(chunkId string, dataNode string) ([]byte, error) 
 		}
 	}()
 
-	client := dc.NewClient(pb.NewDataNodeServiceClient(conn))
+	client := pb.NewDataNodeServiceClient(conn)
 
-	data, err := client.ReadChunk(chunkId)
+	// Prepare the request for reading chunk data
+	req := &pb.ReadChunkRequest{
+		ChunkId: chunkId,
+	}
+
+	// Perform the RPC call to read the chunk data
+	resp, err := client.ReadChunk(context.Background(), req)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return data, nil
+	return resp.Data, nil
 }
