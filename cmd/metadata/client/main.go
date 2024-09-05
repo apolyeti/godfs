@@ -172,6 +172,8 @@ func main() {
 
 	fmt.Printf("File read: %v\n", res12.Data)
 
+	fmt.Printf("Actual string value: %v\n", string(res12.Data))
+
 	// list the directory again
 
 	res13, err := c.ListDir(context.Background())

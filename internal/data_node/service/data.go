@@ -6,6 +6,7 @@ package data_service
 import (
 	"context"
 	p "github.com/apolyeti/godfs/internal/data_node/genproto"
+	"log"
 	"os"
 )
 
@@ -39,6 +40,8 @@ func (d *DataNode) WriteChunk(
 ) (
 	*p.WriteChunkResponse, error,
 ) {
+
+	log.Printf("WRITECHUNK\t%v", req)
 	err := os.MkdirAll(chunkDir, os.ModePerm)
 	if err != nil {
 		return nil, err
@@ -69,6 +72,7 @@ func (d *DataNode) ReadChunk(
 ) (
 	*p.ReadChunkResponse, error,
 ) {
+	log.Printf("READCHUNK\t%v", req)
 	data, ok := d.Chunks[req.ChunkId]
 	if !ok {
 		return nil, os.ErrNotExist
@@ -83,6 +87,7 @@ func (d *DataNode) DeleteChunk(
 ) (
 	*p.DeleteChunkResponse, error,
 ) {
+	log.Printf("DELETECHUNK\t%v", req)
 	err := os.Remove(chunkDir + req.ChunkId)
 	if err != nil {
 		return nil, err
