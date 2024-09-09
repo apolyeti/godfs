@@ -42,5 +42,8 @@ func main() {
 		log.Fatalf("Failed to serve: %v", err)
 	}
 
+	// occasionally log that the server is still running
+	// and also send heartbeats tell metadata service to send heartbeats to data nodes
+
 	log.Printf("Serving on :8080")
 }

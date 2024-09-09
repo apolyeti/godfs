@@ -2,17 +2,17 @@ package metadata_client
 
 import (
 	"context"
-	gRpc "github.com/apolyeti/godfs/internal/metadata/genproto"
+	"github.com/apolyeti/godfs/internal/metadata/genproto"
 	metaService "github.com/apolyeti/godfs/internal/metadata/service"
 )
 
 type Client struct {
-	metadataClient gRpc.MetadataServiceClient
+	metadataClient genproto.MetadataServiceClient
 	currentDir     string
 	currentDirName string
 }
 
-func NewClient(metadataClient gRpc.MetadataServiceClient) *Client {
+func NewClient(metadataClient genproto.MetadataServiceClient) *Client {
 	return &Client{
 		metadataClient: metadataClient,
 		currentDir:     metaService.RootID,
@@ -21,7 +21,7 @@ func NewClient(metadataClient gRpc.MetadataServiceClient) *Client {
 }
 
 func (c *Client) ChangeDir(dir string) error {
-	req := &gRpc.ChangeDirRequest{
+	req := &genproto.ChangeDirRequest{
 		CurrentDirectoryId: c.currentDir,
 		TargetDirectoryId:  dir,
 	}
@@ -45,9 +45,9 @@ func (c *Client) CurrentDirId() string { return c.currentDir }
 func (c *Client) CreateFile(ctx context.Context,
 	name string,
 ) (
-	*gRpc.CreateFileResponse, error,
+	*genproto.CreateFileResponse, error,
 ) {
-	req := &gRpc.CreateFileRequest{
+	req := &genproto.CreateFileRequest{
 		Parent: c.currentDir,
 		Name:   name,
 	}
@@ -58,9 +58,9 @@ func (c *Client) CreateFile(ctx context.Context,
 func (c *Client) Mkdir(ctx context.Context,
 	name string,
 ) (
-	*gRpc.CreateFileResponse, error,
+	*genproto.CreateFileResponse, error,
 ) {
-	req := &gRpc.CreateFileRequest{
+	req := &genproto.CreateFileRequest{
 		Parent: c.currentDir,
 		Name:   name,
 		IsDir:  true,
@@ -69,16 +69,16 @@ func (c *Client) Mkdir(ctx context.Context,
 	return c.metadataClient.CreateFile(ctx, req)
 }
 
-func (c *Client) ListDir(ctx context.Context) (*gRpc.ListDirResponse, error) {
-	req := &gRpc.ListDirRequest{
+func (c *Client) ListDir(ctx context.Context) (*genproto.ListDirResponse, error) {
+	req := &genproto.ListDirRequest{
 		DirectoryId: c.currentDir,
 	}
 
 	return c.metadataClient.ListDir(ctx, req)
 }
 
-func (c *Client) WriteFile(ctx context.Context, fileName string, data []byte) (*gRpc.WriteFileResponse, error) {
-	req := &gRpc.WriteFileRequest{
+func (c *Client) WriteFile(ctx context.Context, fileName string, data []byte) (*genproto.WriteFileResponse, error) {
+	req := &genproto.WriteFileRequest{
 		CurrentDirectoryId: c.currentDir,
 		FileName:           fileName,
 		Data:               data,
@@ -87,8 +87,8 @@ func (c *Client) WriteFile(ctx context.Context, fileName string, data []byte) (*
 	return c.metadataClient.WriteFile(ctx, req)
 }
 
-func (c *Client) ReadFile(ctx context.Context, fileName string) (*gRpc.ReadFileResponse, error) {
-	req := &gRpc.ReadFileRequest{
+func (c *Client) ReadFile(ctx context.Context, fileName string) (*genproto.ReadFileResponse, error) {
+	req := &genproto.ReadFileRequest{
 		CurrentDirectoryId: c.currentDir,
 		FileName:           fileName,
 	}

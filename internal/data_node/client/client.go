@@ -3,15 +3,31 @@ package data_client
 import (
 	ctx "context"
 	dataGrpc "github.com/apolyeti/godfs/internal/data_node/genproto"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"log"
 )
 
 type Client struct {
 	DataNodeClient dataGrpc.DataNodeServiceClient
 }
 
-func NewClient(dataNodeClient dataGrpc.DataNodeServiceClient) *Client {
+func NewClient(dataNode string) *Client {
+	var conn *grpc.ClientConn
+
+	conn, err := grpc.NewClient(
+		dataNode,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+
+	client := dataGrpc.NewDataNodeServiceClient(conn)
+
 	return &Client{
-		DataNodeClient: dataNodeClient,
+		DataNodeClient: client,
 	}
 }
 
@@ -52,6 +68,19 @@ func (c *Client) DeleteChunk(chunkId string) error {
 	}
 
 	_, err := c.DataNodeClient.DeleteChunk(ctx.Background(),
+		req)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Client) SendHeartbeat() error {
+	req := &dataGrpc.HeartbeatRequest{}
+
+	_, err := c.DataNodeClient.Heartbeat(ctx.Background(),
 		req)
 
 	if err != nil {

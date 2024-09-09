@@ -82,3 +82,10 @@ message Inode {
   string parent = 6;
 }
 
+message HeartbeatRequest {
+  string node_id = 1;
+}
+
+message HeartbeatResponse {
+  string node_id = 1;
+}

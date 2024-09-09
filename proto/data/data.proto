@@ -8,6 +8,7 @@ service DataNodeService {
   rpc WriteChunk(WriteChunkRequest) returns (WriteChunkResponse);
   rpc ReadChunk(ReadChunkRequest) returns (ReadChunkResponse);
   rpc DeleteChunk(DeleteChunkRequest) returns (DeleteChunkResponse);
+  rpc Heartbeat(HeartbeatRequest) returns (HeartbeatResponse);
 }
 
 message WriteChunkRequest {
@@ -34,4 +35,12 @@ message DeleteChunkRequest {
 
 message DeleteChunkResponse {
   string chunk_id = 1;
+}
+
+message HeartbeatRequest {
+  string node_id = 1;
+}
+
+message HeartbeatResponse {
+  string node_id = 1;
 }

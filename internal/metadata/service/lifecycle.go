@@ -2,10 +2,12 @@ package metadata_service
 
 import (
 	"encoding/gob"
+	dc "github.com/apolyeti/godfs/internal/data_node/client"
 	metadata "github.com/apolyeti/godfs/internal/metadata/genproto"
 	"log"
 	"os"
 	"sync"
+	"time"
 )
 
 // MetadataService has 2 fields
@@ -17,6 +19,7 @@ type MetadataService struct {
 	mu           sync.RWMutex
 	dataNodes    []string
 	numDataNodes int
+	shutdownChan chan struct{}
 }
 
 // NewMetadataService creates a new MetadataService
@@ -36,6 +39,8 @@ func NewMetadataService() *MetadataService {
 	if err != nil {
 		log.Printf("No previous metadata found, starting with empty state")
 	}
+
+	go m.startHeartbeatLoop()
 	return m
 }
 
@@ -89,5 +94,33 @@ func (m *MetadataService) Shutdown() {
 	err := m.SaveToDisk()
 	if err != nil {
 		log.Printf("Error saving metadata to disk: %v", err)
+	}
+}
+
+func (m *MetadataService) SendHeartbeat() {
+	for _, dataNode := range m.dataNodes {
+		client := dc.NewClient(dataNode)
+		err := client.SendHeartbeat()
+
+		if err != nil {
+			log.Printf("Error sending heartbeat to %v: %v. Consider replacing this node", dataNode, err)
+		}
+
+		log.Println("Heartbeat successfully sent to", dataNode)
+	}
+}
+
+func (m *MetadataService) startHeartbeatLoop() {
+	ticker := time.NewTicker(5 * time.Second)
+
+	for {
+		select {
+		case <-ticker.C:
+			m.SendHeartbeat()
+		case <-m.shutdownChan:
+			log.Println("Shutting down heartbeat loop")
+			ticker.Stop()
+			return
+		}
 	}
 }

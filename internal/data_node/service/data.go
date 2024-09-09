@@ -96,3 +96,13 @@ func (d *DataNode) DeleteChunk(
 	delete(d.Chunks, req.ChunkId)
 	return &p.DeleteChunkResponse{}, nil
 }
+
+func (d *DataNode) SendHeartbeat(
+	ctx context.Context,
+	req *p.HeartbeatRequest,
+) (
+	*p.HeartbeatResponse, error,
+) {
+	log.Printf("SENDHEARTBEAT\t%v", req)
+	return &p.HeartbeatResponse{}, nil
+}
